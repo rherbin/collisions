@@ -4,13 +4,19 @@ from math import sin,cos,atan2,pi,sqrt
 import numpy as np
 import copy
 from random import randint
+import time
 
 winsize = 800
 display = pg.display.set_mode((winsize,winsize))
 clock = pg.time.Clock()
 
+pg.font.init()
+display_font = pg.font.SysFont('Arial', 15)
+
 idl = 0
 collisions = 0
+delta_t = 1
+fps = display_font.render(str(1/(delta_t/1000)), True, "white")
 
 def initmasses():
     for x in objects:
@@ -79,7 +85,7 @@ class Object:
         other.collided[self.id] = True        
 
     def main(self,objects):
-        self.pos += self.vel
+        self.pos += self.vel*(delta_t/1000)
 
         pg.draw.circle(display,[255,0,0],self.pos + winsize/2,self.size)
 
@@ -109,13 +115,33 @@ obj2.vel[0] = 5.0
 obj2.vel[1] = 5.0
 objects.append(obj2)"""
 
-for j in range(5):
-    for i in range(14):
-        obj = Object([-350.0+50.0*i,-200+j*100],1,5)
-        obj.vel[0] = randint(-5,5)
-        obj.vel[1] = randint(-5,5)
-        objects.append(copy.copy(obj))
+def particules():
+    for j in range(5):
+        for i in range(14):
+            obj = Object([-350.0+50.0*i,-200+j*100],1,5)
+            obj.vel[0] = randint(-50,50)
+            obj.vel[1] = randint(-50,50)
+            obj.vel = np.random.sample([2])*600-300
+            objects.append(copy.copy(obj))
 
+def billiard():
+    for i in range(5):
+        objects.append(Object([-40.0+20.0*i,-200.0],.170,10))
+    for i in range(4):
+        objects.append(Object([-30.0+20.0*i,-182.0],.170,10))
+    for i in range(3):
+        objects.append(Object([-20.0+20.0*i,-164.0],.170,10))
+    for i in range(2):
+        objects.append(Object([-10.0+20.0*i,-146.0],.170,10))
+    objects.append(Object([0.0,-128.0],.170,10))
+
+    obj = Object([1.0,150.0],.170,10)
+    obj.vel[1] = -600
+    objects.append(obj)
+
+
+
+billiard()
 initmasses()
 
 while True:
@@ -138,5 +164,9 @@ while True:
 
     #print(collisions)
 
-    clock.tick(60)
+    delta_t = clock.tick()
+    if int(time.time()*1000)%100 == 0:
+        fps = display_font.render(str(1/(delta_t/1000)), True, "white")
+    display.blit(fps, [0,0])
+    print(time.time())
     pg.display.update()
